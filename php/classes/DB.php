@@ -84,7 +84,7 @@ class DB{
     {
         if (isset($fields) && isset($table)) {
 
-            preg_match_all('/([^,]+?)=([^,]+?)(,|$)/', $fields, $matches);
+            $matches=$this->craftingField($fields);
             $keys = implode('`,`', $matches[1]);
             $params = implode(',:', $matches[1]);
 
@@ -119,12 +119,12 @@ class DB{
 
     private function craftingField($field){
         if(is_array($fields)){
-            $results;
+            $sortedField;
             foreach($fields as $index=>$value){
-                $results[1][]=$index;
-                $results[2][]=$value;
+                $sortedField[1][]=$index;
+                $sortedField[2][]=$value;
             }
-            return $results;
+            return $sortedField;
         }
 
         if(preg_match_all('/([^,]+?)=([^,]+?)(?:,|$)/', $fields, $matches)){
@@ -136,7 +136,7 @@ class DB{
 
     public function update($table,$fields,$where){
 
-        preg_match_all('/([^,]+?)=([^,]+?)(,|$)/', $fields, $matches);
+        $matches=$this->craftingField($fields);
 
         $params='';
         foreach($matches[1] as $val){
@@ -154,13 +154,11 @@ class DB{
 
 
         $sql="UPDATE `{$table}` SET {$params} WHERE {$where}";
-        echo $sql;
-        print_r($binds);
-//        if($this->query($sql,$binds)->error()){
-//            throw new RuntimeException('Fail to update item in database with update() in Class DB');
-//        }else{
-//            return true;
-//        }
+       if($this->query($sql,$binds)->error()){
+           throw new RuntimeException('Fail to update item in database with update() in Class DB');
+       }else{
+           return true;
+       }
     }
 
 
