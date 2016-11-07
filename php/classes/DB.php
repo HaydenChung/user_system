@@ -30,6 +30,8 @@ class DB{
 
 
     public function query($sql, $params = array()){
+
+
         $this->_error = false;
         if($this->_query = $this->_pdo->prepare($sql)){
 
@@ -117,7 +119,7 @@ class DB{
         return false;  */
     }
 
-    private function craftingField($field){
+    private function craftingField($fields){
         if(is_array($fields)){
             $sortedField;
             foreach($fields as $index=>$value){
@@ -161,6 +163,62 @@ class DB{
        }
     }
 
+    public function multiUpdate($table,$fields){
+        $arr = $this->fieldsArray($fields);
+     
+        $count=0;
+        $currCount=0;
+
+        foreach($arr as $val){
+            $currCount=max(array_keys($val));
+            if($count<$currCount){
+                $count=$currCount;
+            }
+        }
+
+        $indexStmt=implode("`,`",array_keys($arr));
+
+        $paramStmt='';
+        $duplicateStmt='';
+        $i=0;
+        $binds=[];
+
+        while($i<=$count){
+            $paramStmt.='(';
+            foreach($arr as $key=>$val){
+                if($i===0){$duplicateStmt.='`'.$key.'`=VALUES(`'.$key.'`),';}
+
+                $paramStmt.='?,';
+                          
+                $binds[]=isset($val[$i])?$val[$i]:null;
+
+            }
+        $paramStmt=rtrim($paramStmt,",");
+        $paramStmt.='),';
+        $i++;
+        }
+        $paramStmt=rtrim($paramStmt,",");
+        $duplicateStmt=rtrim($duplicateStmt,",");
+
+        $sql= "INSERT INTO {$table} (`{$indexStmt}`) VALUES {$paramStmt} ON DUPLICATE KEY UPDATE {$duplicateStmt}";
+
+        if($this->query($sql,$binds)->error()){
+           throw new RuntimeException('Fail to update item in database with update() in Class DB');
+       }else{
+           return true;
+       }
+
+    }
+
+    public function fieldsArray($arr){
+        $output=[];
+        foreach($arr as $outerindex=>$outerval){
+                 foreach($outerval as $key=>$value){
+                        $output[$key][$outerindex]=$value;
+                        }
+            }
+        return $output;
+    }
 
 
     public function results(){
@@ -191,6 +249,5 @@ class DB{
     public function count(){
         return $this->_count;
     }
-//can you see this
 }
 
