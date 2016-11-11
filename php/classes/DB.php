@@ -58,7 +58,7 @@ class DB{
             $value      = $where[2];
 
             if(in_array($operator, $operators)){
-                $sql = "`{$action}` FROM {$table} WHERE {$field} {$operator} ?";
+                $sql = "{$action} FROM {$table} WHERE {$field} {$operator} ?";
 
             }else{
                 throw new RuntimeException('Unknown operator in database function : action(),only support '.print_r($operators));
