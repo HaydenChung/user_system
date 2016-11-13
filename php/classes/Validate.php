@@ -6,7 +6,7 @@ class Validate{
 			$_db = null;
 
 
-	public function __contruct(){
+	public function __construct(){
 		$this->_db = DB::getInstance();
 	}
 
@@ -38,21 +38,25 @@ class Validate{
 		foreach($args as $item=>$rules){
 			if(!isset($inputArr[$item])){throw new LogicException("Unknow input element's name provided,{$item};");};
 			$inputVal = $inputArr[$item];
-			foreach($rules as $rule=>$ruleArr){
-				$ruleVal=$ruleArr[0];
-				$errorMsg=$ruleArr[1];
-				$err = true;
+			foreach($rules as $ruleArr){
+				$rule = $ruleArr[0];
+				$ruleVal=$ruleArr[1][0];
+				$errorMsg=$ruleArr[1][1];
+				$noErr = true;
 				switch($rule){
-					case 'required'	: $err=!empty($inputVal) == $ruleVal;
+					case 'required'	: $noErr=!empty($inputVal) == $ruleVal;
 					break;
-					case 'match'	: $err=$inputVal === $inputArr[$ruleVal];
+					case 'match'	: $noErr=$inputVal === $inputArr[$ruleVal];
 					break;
-					case 'regexp'	: $err=preg_match($ruleVal,$inputVal); 
-										if($err===false) throw new LogicException('Regexp check required at {$item} cause an error.');
+					case 'regexp'	: $noErr=preg_match($ruleVal,$inputVal); 
+										if($noErr===false) throw new LogicException('Regexp check required at {$item} cause an error.');
 					break;
+					case 'unique'	: $dbCheck = $this->_db->get($ruleVal,array($item,'=',$inputVal));
+										$noErr=$dbCheck->count()<1;		
+
 					default: '';
 				}
-				if($err==false)$this->_error[$item]=$errorMsg;
+				if($noErr==false)$this->_error[$item]=$errorMsg;
 			}
 		}
 		if(empty($this->_error)){

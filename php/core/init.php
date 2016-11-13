@@ -1,9 +1,4 @@
 <?php
-/**
- * Created by : lastcoin
- * Date: 6/9/2016
- * Time: 17:15
- */
 
 session_start();
 
@@ -20,7 +15,8 @@ $GLOBALS['config']=array(
         'cookie_expiry' => 604800
     ),
     'session' => array(
-        'session_name' => 'user'
+        'session_name' => 'user',
+        'token_name' => 'token'
     ),
     'document' => array(
         'root' => $_SERVER['DOCUMENT_ROOT'].'/user_system/',

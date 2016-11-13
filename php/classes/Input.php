@@ -27,6 +27,7 @@ class Input {
 			}
 			return self::$_instance;
 		}
+
 		return false;
 	}
 
