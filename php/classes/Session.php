@@ -13,14 +13,35 @@ class Session{
 		if(self::exists($name)){
 			return getArray($name,$_SESSION);
 		}else{
-			throw new RuntimeException("Invalid path : '{$name}' .");	
+			return false;	
 		} 
+	}
+
+	public static function toHtml($name){
+		return htmlspecialchars(self::get($name));
 	}
 
 	public static function delete($name){
 		if(self::exists($name)){
 			delArray($name,$_SESSION);
 		}
+	}
+
+	public static function flash($name,$string=null){
+		
+		if(self::exists($name)){
+			if($string!==null){
+				$string .= '<br>'.self::get($name);
+				self::put($name,$string);
+				return;
+			} 
+			$string = self::get($name);
+			self::delete($name);
+			return $string;
+		}else{
+			self::put($name,$string);
+		}
+
 	}
 }
 

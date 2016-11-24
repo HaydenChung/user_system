@@ -31,7 +31,6 @@ class DB{
 
     public function query($sql, $params = array()){
 
-
         $this->_error = false;
         if($this->_query = $this->_pdo->prepare($sql)){
 
@@ -78,12 +77,17 @@ class DB{
         return $this->action('SELECT *', $table, $where);
     }
 
+    public function toHtml($table, $where = array()){
+        return htmlspecialchars($this->action('SELECT *', $table, $where));
+    }
+
     public function delete($table, $where = array()){
         return $this->action('DELETE',$table,$where);
     }
 
     public function insert($table, $fields)
     {
+        print_r($fields);
         if (isset($fields) && isset($table)) {
 
             $matches=$this->craftingField($fields);
@@ -97,7 +101,7 @@ class DB{
 
             $sql = "INSERT INTO $table (`{$keys}`) VALUES (:{$params})";
             if($this->query($sql,$binds)->error()){
-                throw new RuntimeException('Fail to insert items into database with insert() from Class DB.');
+                return false;
             }else{
                 return true;
             }
@@ -154,14 +158,23 @@ class DB{
             $binds[':' . $bindkey] = $matches[2][$index];
         }
 
-
         $sql="UPDATE `{$table}` SET {$params} WHERE {$where}";
+
        if($this->query($sql,$binds)->error()){
            throw new RuntimeException('Fail to update item in database with update() in Class DB');
        }else{
            return true;
        }
     }
+
+    /**
+    * @param string $table
+    * @param array $fields   Format as: array(  0=>array(fieldOne=>value1,fieldTwo=>value2),
+    *                                            1=>array(fieldOne=>value3,fieldThree=value4),
+    *                                            2=>array(fieldThree=>value5))
+    *
+    *
+    */
 
     public function multiUpdate($table,$fields){
         $arr = $this->fieldsArray($fields);

@@ -40,8 +40,8 @@ class Validate{
 			$inputVal = $inputArr[$item];
 			foreach($rules as $ruleArr){
 				$rule = $ruleArr[0];
-				$ruleVal=$ruleArr[1][0];
-				$errorMsg=$ruleArr[1][1];
+				$ruleVal=$ruleArr[1];
+				$errorMsg=$ruleArr[2];
 				$noErr = true;
 				switch($rule){
 					case 'required'	: $noErr=!empty($inputVal) == $ruleVal;
@@ -49,7 +49,7 @@ class Validate{
 					case 'match'	: $noErr=$inputVal === $inputArr[$ruleVal];
 					break;
 					case 'regexp'	: $noErr=preg_match($ruleVal,$inputVal); 
-										if($noErr===false) throw new LogicException('Regexp check required at {$item} cause an error.');
+										if($noErr===false) throw new LogicException('Regexp required for {$item} cause an error.');
 					break;
 					case 'unique'	: $dbCheck = $this->_db->get($ruleVal,array($item,'=',$inputVal));
 										$noErr=$dbCheck->count()<1;		

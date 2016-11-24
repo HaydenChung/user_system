@@ -26,4 +26,8 @@ class Config {
 
         }
     }
+
+    public static function toHtml($path = null){
+        return self::get($path);
+    }
 }

@@ -6,24 +6,30 @@
  */
 
 require_once $_SERVER['DOCUMENT_ROOT'].'/user_system/php/core/init.php';
-try{
 
-//$params=['user_id'=>'Good','password'=>'password','group'=>'1'];
 
-/*$param1=['user_id'=>'Good','password'=>'password2','group'=>'1'];
-$param2=['user_id'=>'Good2','password'=>'password3','group'=>'1','joined'=>date("Y-m-d H:i:s")];
-$params=[$param1,$param2];
-*/
-//$user = DB::getInstance()->multiUpdate('users',$params,'name=Good girl');
-//$user = DB::getInstance()->update('users','user_id=Good,password=password,group=1,joined='.date("Y-m-d H:i:s"),'name=Good girl');
+if(Session::exists('indexdotphp')){
+echo Session::flash('indexdotphp');
+}
 
-$data= DB::getInstance()->get('users',['id','<','3'])->first('user_id');
+$user = new User();
+if($user->isLoggedin()){
+?>
+	<p>Hello <a href="profile.php?user=<?php echo htmlspecialchars($user->data()->user_id); ?>"><?php echo htmlspecialchars($user->data()->user_id); ?></a>!</p>
 
-print_r($data);
+	<ul>
+		<li><a href="logout.php">Log out</a></li>
+		<li><a href="update.php">Update deital</a></li>
+		<li><a href="changepassword.php">Change password</a></li>
+	</ul>
 
-}catch(RuntimeException $e){
-    echo $e->getMessage();
-}catch(PDOException $e1){
-    echo $e1->getMessage();
+<?php
+
+	if($user->hasPermission('admin')){
+		echo '<p>You are an administrator!</p>';
+	}
+} else {
+
+	echo '<p>You need to <a href="login.php">log in</a> or <a href="register.php">register</a></p>';
 }
 
