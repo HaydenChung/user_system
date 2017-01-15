@@ -1,9 +1,4 @@
 <?php
-/**
- * Created by : lastcoin
- * Date: 6/9/2016
- * Time: 17:10
- */
 
 class DB{
     private static $_instance = null;
@@ -11,11 +6,14 @@ class DB{
             $_query,
             $_error = false,
             $_results,
-            $_count = 0;
+            $_count = 0,
+            $_clause = '',
+            $_pdoParams = [];
 
     private function __construct(){
         try{
             $this->_pdo = new PDO('mysql:host=' . Config::get('mysql/host') . ';dbname='. Config::get('mysql/db'),Config::get('mysql/username'),Config::get('mysql/password'));
+            $this->_pdo->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
         } catch(PDOException $e){
             die ($e->getMessage());
         }
@@ -30,11 +28,11 @@ class DB{
 
 
     public function query($sql, $params = array()){
-
+var_dump($this->_pdoParams);
         $this->_error = false;
-        if($this->_query = $this->_pdo->prepare($sql)){
+        if($this->_query = $this->_pdo->prepare($sql.$this->_clause)){
 
-            if($this->_query->execute($params)){
+            if($this->_query->execute($this->_pdoParams)){
                 $this->_results = $this->_query->fetchAll(PDO::FETCH_OBJ);
                 $this->_count = $this->_query->rowCount();
             } else {
@@ -43,7 +41,6 @@ class DB{
         }
         return $this;
     }
-
 
     public function action($action, $table, $where = array()){
 
@@ -261,6 +258,56 @@ class DB{
 
     public function count(){
         return $this->_count;
+    }
+
+    public function limit($limit,$offset){
+
+        $this->_clause .= ' LIMIT ? OFFSET ?';
+        $this->_pdoParams[] = $limit;
+        $this->_pdoParams[] = $offset;
+        return $this;
+    }
+
+    public function where($args = array()){
+
+    //currently need a whilelist to restrict query field
+
+        $operators = array('=','>','<','>=','<=','like','in');
+        $tempArr = '';
+        $pdoParam = [];
+
+        $this->_clause .= ' WHERE ';
+        if(is_array($args[0])){
+            $tempArr = [];
+            foreach($args as $where){
+                if(in_array($where[1],$operators)){
+
+                $tempArr[] = "{$where[0]} {$where[1]} ?";
+                $this->_pdoParams[] = $where[2];
+                
+                } else {
+                    throw new RuntimeException('Unexpected where statment.');
+                }
+            }
+            $this->_clause .= implode(' AND ',$pdoParam);
+        } else {
+            if(in_array($args[1],$operators)){
+                $this->_clause .= "{$args[0]} {$args[1]} ?";
+                $this->_pdoParams[] = $args[2];
+            } else {
+                throw new RuntimeException('Unexpected where statment.');
+            }
+        }
+        return $this;
+    }
+
+
+    public function whileList(){
+        //create whileList from array/object,for query columns and/or tables
+    }
+
+    public function join(){
+        //join tables method
     }
 }
 
